@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <unistd.h> // for sleep on Unix, but on Windows, use Sleep from windows.h
+#ifndef _WIN32
+#include <unistd.h> // for sleep on Unix
+#endif
 
 #ifdef _WIN32
 #include <windows.h>
