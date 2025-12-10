@@ -12,6 +12,8 @@
 
 #define NUM_LANES 4
 #define INITIAL_VEHICLES 5
+#define BASE_INTERVAL 2  // base seconds between vehicles
+#define PRIORITY_BOOST 1  // extra chance for priority lane
 
 const char* lane_files[NUM_LANES] = {
     "data/lanea.txt",
@@ -39,9 +41,13 @@ int main() {
 
     printf("Initial vehicles generated.\n");
 
-    // Continuously generate more vehicles
+    // Continuously generate more vehicles with varying rates
     while (1) {
         int lane = rand() % NUM_LANES;
+        // Boost chance for priority lane (lane 0)
+        if (lane != 0 && rand() % 10 < PRIORITY_BOOST) {
+            lane = 0;
+        }
         FILE* fp = fopen(lane_files[lane], "a");
         if (fp == NULL) {
             perror("Error opening file");
@@ -50,7 +56,9 @@ int main() {
         fprintf(fp, "%d\n", vehicle_id++);
         fclose(fp);
         printf("Added vehicle %d to lane %c\n", vehicle_id - 1, 'A' + lane);
-        sleep(2); // Wait 2 seconds
+        // Vary sleep time: base 2 seconds, plus random 0-2
+        int sleep_time = BASE_INTERVAL + (rand() % 3);
+        sleep(sleep_time);
     }
 
     return 0;
