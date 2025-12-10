@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+// Queue implementation using linked list for FIFO operations
+// Time: O(1) enqueue/dequeue, Space: O(n) for n vehicles
+
 // Create a new queue
 Queue* createQueue() {
     Queue* q = (Queue*)malloc(sizeof(Queue));
