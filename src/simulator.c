@@ -81,9 +81,19 @@ int main() {
 #ifndef _WIN32
     int pipe_fd = open("traffic_pipe", O_RDONLY | O_NONBLOCK);
     if (pipe_fd == -1) {
-        perror("Pipe open failed");
+        perror("Pipe open failed, continuing without IPC");
     }
 #endif
+
+    // Check for file errors
+    for (int i = 0; i < NUM_LANES; i++) {
+        FILE* test_fp = fopen(lane_files[i], "a");
+        if (test_fp == NULL) {
+            fprintf(stderr, "Warning: Cannot access %s\n", lane_files[i]);
+        } else {
+            fclose(test_fp);
+        }
+    }
 
     // Simulate polling and processing
     while (1) {
