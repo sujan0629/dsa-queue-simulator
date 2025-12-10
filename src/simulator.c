@@ -3,6 +3,7 @@
 #include <string.h>
 #ifndef _WIN32
 #include <unistd.h>
+#include <fcntl.h>
 #endif
 #include "queue.h"
 
@@ -74,9 +75,29 @@ int main() {
     LightState current_light = GREEN;
     int light_timer = GREEN_TIME;
 
+    // IPC: Open pipe for reading
+#ifndef _WIN32
+    int pipe_fd = open("traffic_pipe", O_RDONLY | O_NONBLOCK);
+    if (pipe_fd == -1) {
+        perror("Pipe open failed");
+    }
+#endif
+
     // Simulate polling and processing
     while (1) {
         sleep(1); // Poll every 1 second for finer control
+
+        // IPC: Read from pipe
+#ifndef _WIN32
+        if (pipe_fd != -1) {
+            char buffer[256];
+            ssize_t bytes = read(pipe_fd, buffer, sizeof(buffer) - 1);
+            if (bytes > 0) {
+                buffer[bytes] = '\0';
+                printf("IPC: %s", buffer);
+            }
+        }
+#endif
 
         // Update light timer
         light_timer--;
