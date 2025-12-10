@@ -40,4 +40,6 @@ The simulator will poll lane files every 5 seconds, process vehicles, and displa
 - View log: `cat simulation_log.txt`
 
 ## References
-Coming soon...
+- Assignment: COMP202 DSA Queue Simulator
+- SDL: https://wiki.libsdl.org/SDL2/FrontPage
+- GitHub: https://github.com/sujan0629/dsa-queue-simulator
