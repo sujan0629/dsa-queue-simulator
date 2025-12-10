@@ -21,7 +21,9 @@ typedef enum {
 #define PRIORITY_LANE 0  // AL2 is lane A (index 0)
 #define GREEN_TIME 10    // seconds for green light
 #define RED_TIME 5       // seconds for red light
-#define VEHICLE_PASS_TIME 2  // seconds per vehicle
+int estimate_pass_time(int vehicles) {
+    return vehicles * VEHICLE_PASS_TIME;
+}
 
 const char* lane_files[NUM_LANES] = {
     "data/lanea.txt",
@@ -146,7 +148,10 @@ int main() {
                 for (int i = 0; i < NUM_LANES; i++) total_vehicles += getSize(vehicle_queues[i]);
                 int n = NUM_LANES;
                 int vehicles_to_serve = total_vehicles / n;
-                if (vehicles_to_serve < 1 && total_vehicles > 0) vehicles_to_serve = 1; // ensure progress
+                if (vehicles_to_serve < 1 && total_vehicles > 0) vehicles_to_serve = 1;
+
+                int estimated_time = estimate_pass_time(vehicles_to_serve);
+                printf("Estimated pass time for %d vehicles: %d seconds\n", vehicles_to_serve, estimated_time); // ensure progress
 
                 // Distribute proportionally, but simplified to round-robin for now
                 int served = 0;
