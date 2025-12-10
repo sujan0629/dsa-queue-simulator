@@ -120,20 +120,21 @@ int main() {
                     priority_lane = -1;
                 }
             } else {
-                // Normal scheduling: serve each lane proportionally, but only 1 per second for simplicity
-                int total = 0;
-                for (int i = 0; i < NUM_LANES; i++) total += getSize(vehicle_queues[i]);
-                if (total > 0) {
-                    // Simple round-robin for now
-                    static int round_robin = 0;
-                    for (int attempt = 0; attempt < NUM_LANES; attempt++) {
-                        int i = (round_robin + attempt) % NUM_LANES;
-                        if (!isEmpty(vehicle_queues[i])) {
-                            Vehicle v = dequeue(vehicle_queues[i]);
-                            printf("Vehicle %d passed from lane %c\n", v.id, 'A' + i);
-                            round_robin = (i + 1) % NUM_LANES;
-                            break;
-                        }
+                // Normal scheduling: serve proportionally as per formula |V| = (1/n) * sum Li
+                int total_vehicles = 0;
+                for (int i = 0; i < NUM_LANES; i++) total_vehicles += getSize(vehicle_queues[i]);
+                int n = NUM_LANES;
+                int vehicles_to_serve = total_vehicles / n;
+                if (vehicles_to_serve < 1 && total_vehicles > 0) vehicles_to_serve = 1; // ensure progress
+
+                // Distribute proportionally, but simplified to round-robin for now
+                int served = 0;
+                for (int attempt = 0; attempt < NUM_LANES && served < vehicles_to_serve; attempt++) {
+                    int i = attempt % NUM_LANES;
+                    if (!isEmpty(vehicle_queues[i])) {
+                        Vehicle v = dequeue(vehicle_queues[i]);
+                        printf("Vehicle %d passed from lane %c\n", v.id, 'A' + i);
+                        served++;
                     }
                 }
             }
