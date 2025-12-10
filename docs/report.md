@@ -19,4 +19,11 @@ The simulation uses a priority queue approach for traffic management:
 5. Else, serve proportionally: |V| = (total_vehicles / num_lanes), round-robin.
 6. Poll every second, load new vehicles, truncate files.
 
-Communication via IPC pipes and file polling.
+## Time Complexity
+
+- Enqueue/Dequeue: O(1) per operation
+- Priority check: O(1) (only one lane)
+- Normal serving: O(n) where n=4 lanes
+- Overall simulation: O(t) where t is time steps, dominated by polling
+
+Space: O(total vehicles) for queues.
