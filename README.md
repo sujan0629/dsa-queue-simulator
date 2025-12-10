@@ -33,10 +33,11 @@ Then run the simulator:
 
 The simulator will poll lane files every 5 seconds, process vehicles, and display status. Use Ctrl+C to stop.
 
-### Clean
-```bash
-make clean
-```
+### Advanced Usage
+- Run multiple generators: `./traffic_generator & ./traffic_generator2 & ./traffic_generator3 &`
+- Monitor with receivers: `./reciever & ./reciever2 &`
+- Test queue: `./test_queue`
+- View log: `cat simulation_log.txt`
 
 ## References
 Coming soon...
