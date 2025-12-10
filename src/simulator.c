@@ -12,6 +12,7 @@
 #endif
 
 #define NUM_LANES 4
+#define PRIORITY_LANE 0  // AL2 is lane A (index 0)
 
 const char* lane_files[NUM_LANES] = {
     "data/lanea.txt",
@@ -72,14 +73,11 @@ int main() {
             if (tf) fclose(tf);
         }
 
-        // Detect priority lane: lane with >10 vehicles becomes priority
+        // Detect priority lane: only AL2 (lane A) can be priority if >10 vehicles
         if (priority_lane == -1) {
-            for (int i = 0; i < NUM_LANES; i++) {
-                if (getSize(vehicle_queues[i]) > 10) {
-                    priority_lane = i;
-                    printf("Priority lane detected: %c (size=%d)\n", 'A' + i, getSize(vehicle_queues[i]));
-                    break;
-                }
+            if (getSize(vehicle_queues[PRIORITY_LANE]) > 10) {
+                priority_lane = PRIORITY_LANE;
+                printf("Priority lane detected: %c (size=%d)\n", 'A' + PRIORITY_LANE, getSize(vehicle_queues[PRIORITY_LANE]));
             }
         }
 
