@@ -1,4 +1,5 @@
 // TODO: Optimize by using threads for concurrent processing
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #ifndef _WIN32
@@ -21,6 +22,8 @@ typedef enum {
 #define PRIORITY_LANE 0  // AL2 is lane A (index 0)
 #define GREEN_TIME 10    // seconds for green light
 #define RED_TIME 5       // seconds for red light
+#define VEHICLE_PASS_TIME 2  // seconds per vehicle
+
 int estimate_pass_time(int vehicles) {
     return vehicles * VEHICLE_PASS_TIME;
 }
