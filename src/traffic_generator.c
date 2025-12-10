@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <time.h>
 #ifndef _WIN32
-#include <unistd.h> // for sleep on Unix
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #endif
 
 #ifdef _WIN32
@@ -12,8 +14,8 @@
 
 #define NUM_LANES 4
 #define INITIAL_VEHICLES 5
-#define BASE_INTERVAL 2  // base seconds between vehicles
-#define PRIORITY_BOOST 1  // extra chance for priority lane
+#define BASE_INTERVAL 2
+#define PRIORITY_BOOST 1
 
 const char* lane_files[NUM_LANES] = {
     "data/lanea.txt",
@@ -26,9 +28,14 @@ int main() {
     srand(time(NULL));
     int vehicle_id = 1;
 
+    // IPC: Create named pipe for communication
+#ifndef _WIN32
+    mkfifo("traffic_pipe", 0666);
+#endif
+
     // Generate initial vehicles
     for (int i = 0; i < NUM_LANES; i++) {
-        FILE* fp = fopen(lane_files[i], "w"); // Start fresh
+        FILE* fp = fopen(lane_files[i], "w");
         if (fp == NULL) {
             perror("Error opening file");
             return 1;
@@ -44,7 +51,6 @@ int main() {
     // Continuously generate more vehicles with varying rates
     while (1) {
         int lane = rand() % NUM_LANES;
-        // Boost chance for priority lane (lane 0)
         if (lane != 0 && rand() % 10 < PRIORITY_BOOST) {
             lane = 0;
         }
@@ -56,7 +62,18 @@ int main() {
         fprintf(fp, "%d\n", vehicle_id++);
         fclose(fp);
         printf("Added vehicle %d to lane %c\n", vehicle_id - 1, 'A' + lane);
-        // Vary sleep time: base 2 seconds, plus random 0-2
+
+        // IPC: Write to pipe
+#ifndef _WIN32
+        int fd = open("traffic_pipe", O_WRONLY);
+        if (fd != -1) {
+            char msg[50];
+            sprintf(msg, "Vehicle %d to lane %c\n", vehicle_id - 1, 'A' + lane);
+            write(fd, msg, strlen(msg));
+            close(fd);
+        }
+#endif
+
         int sleep_time = BASE_INTERVAL + (rand() % 3);
         sleep(sleep_time);
     }
