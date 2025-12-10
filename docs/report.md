@@ -8,12 +8,15 @@
 | Vehicle | Struct with int id | Represent individual vehicles |
 | LightState | Enum (RED, GREEN) | Track traffic light state |
 
-## List of Functions
+## Algorithm Used
 
-- `createQueue()`: Initialize queue
-- `enqueue(Queue*, Vehicle)`: Add vehicle to queue
-- `dequeue(Queue*)`: Remove and return vehicle from queue
-- `isEmpty(Queue*)`: Check if queue empty
-- `getSize(Queue*)`: Get queue size
-- `freeQueue(Queue*)`: Deallocate queue
-- `estimate_pass_time(int)`: Calculate time for vehicles to pass
+The simulation uses a priority queue approach for traffic management:
+
+1. Vehicles are generated and enqueued in lane-specific queues.
+2. Traffic light cycles between RED and GREEN states.
+3. During GREEN, check for priority lane (AL2) if >10 vehicles.
+4. If priority, serve until <5 vehicles.
+5. Else, serve proportionally: |V| = (total_vehicles / num_lanes), round-robin.
+6. Poll every second, load new vehicles, truncate files.
+
+Communication via IPC pipes and file polling.
