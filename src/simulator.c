@@ -11,8 +11,16 @@
 #define sleep(x) Sleep(x * 1000)
 #endif
 
+typedef enum {
+    RED,
+    GREEN
+} LightState;
+
 #define NUM_LANES 4
 #define PRIORITY_LANE 0  // AL2 is lane A (index 0)
+#define GREEN_TIME 10    // seconds for green light
+#define RED_TIME 5       // seconds for red light
+#define VEHICLE_PASS_TIME 2  // seconds per vehicle
 
 const char* lane_files[NUM_LANES] = {
     "data/lanea.txt",
@@ -62,9 +70,27 @@ int main() {
     // Simple state for priority lane (-1 means none)
     int priority_lane = -1;
 
+    // Traffic light state
+    LightState current_light = GREEN;
+    int light_timer = GREEN_TIME;
+
     // Simulate polling and processing
     while (1) {
-        sleep(5); // Poll every 5 seconds
+        sleep(1); // Poll every 1 second for finer control
+
+        // Update light timer
+        light_timer--;
+        if (light_timer <= 0) {
+            if (current_light == GREEN) {
+                current_light = RED;
+                light_timer = RED_TIME;
+                printf("Light turned RED\n");
+            } else {
+                current_light = GREEN;
+                light_timer = GREEN_TIME;
+                printf("Light turned GREEN\n");
+            }
+        }
 
         // Load any new vehicles appended by generator and truncate
         for (int i = 0; i < NUM_LANES; i++) {
@@ -73,49 +99,55 @@ int main() {
             if (tf) fclose(tf);
         }
 
-        // Detect priority lane: only AL2 (lane A) can be priority if >10 vehicles
-        if (priority_lane == -1) {
-            if (getSize(vehicle_queues[PRIORITY_LANE]) > 10) {
-                priority_lane = PRIORITY_LANE;
-                printf("Priority lane detected: %c (size=%d)\n", 'A' + PRIORITY_LANE, getSize(vehicle_queues[PRIORITY_LANE]));
+        // Process vehicles only when light is green
+        if (current_light == GREEN) {
+            // Detect priority lane: only AL2 (lane A) can be priority if >10 vehicles
+            if (priority_lane == -1) {
+                if (getSize(vehicle_queues[PRIORITY_LANE]) > 10) {
+                    priority_lane = PRIORITY_LANE;
+                    printf("Priority lane detected: %c (size=%d)\n", 'A' + PRIORITY_LANE, getSize(vehicle_queues[PRIORITY_LANE]));
+                }
             }
-        }
 
-        // If we have a priority lane, serve it until size < 5
-        if (priority_lane != -1) {
-            int serve_count = 2; // number of vehicles to serve in this tick for priority
-            printf("Serving priority lane %c: serving up to %d vehicles\n", 'A' + priority_lane, serve_count);
-            for (int s = 0; s < serve_count && !isEmpty(vehicle_queues[priority_lane]); s++) {
-                Vehicle v = dequeue(vehicle_queues[priority_lane]);
-                printf("Vehicle %d passed from lane %c\n", v.id, 'A' + priority_lane);
-            }
-            if (getSize(vehicle_queues[priority_lane]) < 5) {
-                printf("Priority lane %c dropped below 5, returning to normal scheduling\n", 'A' + priority_lane);
-                priority_lane = -1;
-            }
-        } else {
-            // Normal scheduling: serve each lane proportionally
-            int total = 0;
-            for (int i = 0; i < NUM_LANES; i++) total += getSize(vehicle_queues[i]);
-            int n = NUM_LANES;
-            int serve_each = (n == 0) ? 0 : (total / n);
-            if (serve_each < 1) serve_each = 1; // ensure progress
-
-            for (int i = 0; i < NUM_LANES; i++) {
-                int to_serve = serve_each;
-                if (isEmpty(vehicle_queues[i])) continue;
-                printf("Serving lane %c: up to %d vehicles\n", 'A' + i, to_serve);
-                for (int s = 0; s < to_serve && !isEmpty(vehicle_queues[i]); s++) {
-                    Vehicle v = dequeue(vehicle_queues[i]);
-                    printf("Vehicle %d passed from lane %c\n", v.id, 'A' + i);
+            // If we have a priority lane, serve it until size < 5
+            if (priority_lane != -1) {
+                if (!isEmpty(vehicle_queues[priority_lane])) {
+                    Vehicle v = dequeue(vehicle_queues[priority_lane]);
+                    printf("Vehicle %d passed from priority lane %c\n", v.id, 'A' + priority_lane);
+                }
+                if (getSize(vehicle_queues[priority_lane]) < 5) {
+                    printf("Priority lane %c dropped below 5, returning to normal scheduling\n", 'A' + priority_lane);
+                    priority_lane = -1;
+                }
+            } else {
+                // Normal scheduling: serve each lane proportionally, but only 1 per second for simplicity
+                int total = 0;
+                for (int i = 0; i < NUM_LANES; i++) total += getSize(vehicle_queues[i]);
+                if (total > 0) {
+                    // Simple round-robin for now
+                    static int round_robin = 0;
+                    for (int attempt = 0; attempt < NUM_LANES; attempt++) {
+                        int i = (round_robin + attempt) % NUM_LANES;
+                        if (!isEmpty(vehicle_queues[i])) {
+                            Vehicle v = dequeue(vehicle_queues[i]);
+                            printf("Vehicle %d passed from lane %c\n", v.id, 'A' + i);
+                            round_robin = (i + 1) % NUM_LANES;
+                            break;
+                        }
+                    }
                 }
             }
         }
 
-        // Status
-        printf("Updated queues:\n");
-        for (int i = 0; i < NUM_LANES; i++) {
-            printf("Lane %c: %d vehicles\n", 'A' + i, getSize(vehicle_queues[i]));
+        // Status every 5 seconds
+        static int status_timer = 0;
+        status_timer++;
+        if (status_timer >= 5) {
+            status_timer = 0;
+            printf("Light: %s (%d sec left), Queues:\n", current_light == GREEN ? "GREEN" : "RED", light_timer);
+            for (int i = 0; i < NUM_LANES; i++) {
+                printf("Lane %c: %d vehicles\n", 'A' + i, getSize(vehicle_queues[i]));
+            }
         }
     }
 
