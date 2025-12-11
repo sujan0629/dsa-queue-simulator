@@ -13,9 +13,9 @@ void draw_lane(SDL_Renderer* renderer, int x, int y, int width, int height) {
     SDL_RenderFillRect(renderer, &rect);
 }
 
-void draw_light(SDL_Renderer* renderer, int x, int y, SDL_Color color) {
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    SDL_Rect rect = {x, y, 20, 20};
+void draw_vehicle(SDL_Renderer* renderer, int x, int y) {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // Blue
+    SDL_Rect rect = {x, y, 20, 10};
     SDL_RenderFillRect(renderer, &rect);
 }
 
@@ -59,11 +59,9 @@ int main() {
             draw_lane(renderer, 50 + i * 150, 100, LANE_WIDTH, LANE_HEIGHT);
         }
 
-        // Draw lights
-        SDL_Color light_color = light_state ? green : red;
-        draw_light(renderer, 350, 50, light_color);
-
-        SDL_RenderPresent(renderer);
+        // Draw vehicles (placeholder)
+        draw_vehicle(renderer, 60, 120);
+        draw_vehicle(renderer, 210, 150);
         SDL_Delay(1000); // 1 second
         light_state = !light_state;
     }
