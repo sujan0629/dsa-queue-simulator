@@ -3,13 +3,15 @@
 #include <time.h>
 #ifndef _WIN32
 #include <unistd.h>
-#include <fcntl.h>
-#include <sys/stat.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #endif
 
 #ifdef _WIN32
-#include <windows.h>
-#define sleep(x) Sleep(x * 1000)
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
 #endif
 
 #define NUM_LANES 4
@@ -28,10 +30,23 @@ int main() {
     srand(time(NULL));
     int vehicle_id = 1;
 
-    // IPC: Create named pipe for communication
-#ifndef _WIN32
-    mkfifo("traffic_pipe", 0666);
+#ifdef _WIN32
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2,2), &wsa);
 #endif
+
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(8080);
+    inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
+
+    if (connect(sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+        perror("Connect failed");
+        return 1;
+    }
+
+    printf("Connected to simulator.\n");
 
     // Generate initial vehicles
     for (int i = 0; i < NUM_LANES; i++) {
@@ -63,16 +78,10 @@ int main() {
         fclose(fp);
         printf("Added vehicle %d to lane %c\n", vehicle_id - 1, 'A' + lane);
 
-        // IPC: Write to pipe
-#ifndef _WIN32
-        int fd = open("traffic_pipe", O_WRONLY);
-        if (fd != -1) {
-            char msg[50];
-            sprintf(msg, "Vehicle %d to lane %c\n", vehicle_id - 1, 'A' + lane);
-            write(fd, msg, strlen(msg));
-            close(fd);
-        }
-#endif
+        // Socket: Send message
+        char msg[50];
+        sprintf(msg, "Vehicle %d to lane %c\n", vehicle_id - 1, 'A' + lane);
+        send(sock, msg, strlen(msg), 0);
 
         int sleep_time = BASE_INTERVAL + (rand() % 3);
         sleep(sleep_time);
