@@ -4,12 +4,16 @@
 #include <string.h>
 #ifndef _WIN32
 #include <unistd.h>
-#include <fcntl.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #endif
 #include "queue.h"
 
 #ifdef _WIN32
-#include <windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
 #define sleep(x) Sleep(x * 1000)
 #endif
 
@@ -60,6 +64,28 @@ int main() {
         vehicle_queues[i] = createQueue();
     }
 
+#ifdef _WIN32
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2,2), &wsa);
+#endif
+
+    int server_sock = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(8080);
+
+    bind(server_sock, (struct sockaddr*)&server_addr, sizeof(server_addr));
+    listen(server_sock, 5);
+    printf("Simulator listening on port 8080\n");
+
+    int client_sock = accept(server_sock, NULL, NULL);
+    if (client_sock < 0) {
+        perror("Accept failed");
+        return 1;
+    }
+    printf("Generator connected.\n");
+
     // Load initial vehicles and truncate the files so generator won't duplicate entries
     for (int i = 0; i < NUM_LANES; i++) {
         load_vehicles_from_file(i);
@@ -80,39 +106,17 @@ int main() {
     LightState current_light = GREEN;
     int light_timer = GREEN_TIME;
 
-    // IPC: Open pipe for reading
-#ifndef _WIN32
-    int pipe_fd = open("traffic_pipe", O_RDONLY | O_NONBLOCK);
-    if (pipe_fd == -1) {
-        perror("Pipe open failed, continuing without IPC");
-    }
-#endif
-
-    // Check for file errors
-    for (int i = 0; i < NUM_LANES; i++) {
-        FILE* test_fp = fopen(lane_files[i], "a");
-        if (test_fp == NULL) {
-            fprintf(stderr, "Warning: Cannot access %s\n", lane_files[i]);
-        } else {
-            fclose(test_fp);
-        }
-    }
-
     // Simulate polling and processing
     while (1) {
         sleep(1); // Poll every 1 second for finer control
 
-        // IPC: Read from pipe
-#ifndef _WIN32
-        if (pipe_fd != -1) {
-            char buffer[256];
-            ssize_t bytes = read(pipe_fd, buffer, sizeof(buffer) - 1);
-            if (bytes > 0) {
-                buffer[bytes] = '\0';
-                printf("IPC: %s", buffer);
-            }
+        // Socket: Read from client
+        char buffer[256];
+        int bytes = recv(client_sock, buffer, sizeof(buffer) - 1, 0);
+        if (bytes > 0) {
+            buffer[bytes] = '\0';
+            printf("Socket: %s", buffer);
         }
-#endif
 
         // Update light timer
         light_timer--;
