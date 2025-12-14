@@ -86,6 +86,11 @@ int main() {
     }
     printf("Generator connected.\n");
 
+    FILE* log_fp = fopen("simulation_log.txt", "a");
+    if (log_fp) {
+        fprintf(log_fp, "Simulation started at %s\n", __DATE__ " " __TIME__);
+    }
+
     // Load initial vehicles and truncate the files so generator won't duplicate entries
     for (int i = 0; i < NUM_LANES; i++) {
         load_vehicles_from_file(i);
@@ -191,6 +196,10 @@ int main() {
             printf("Light: %s (%d sec left), Queues:\n", current_light == GREEN ? "GREEN" : "RED", light_timer);
             for (int i = 0; i < NUM_LANES; i++) {
                 printf("Lane %c: %d vehicles\n", 'A' + i, getSize(vehicle_queues[i]));
+                if (log_fp) {
+                    fprintf(log_fp, "Lane %c: %d vehicles\n", 'A' + i, getSize(vehicle_queues[i]));
+                    fflush(log_fp);
+                }
             }
         }
     }
@@ -199,6 +208,11 @@ int main() {
     for (int i = 0; i < NUM_LANES; i++) {
         freeQueue(vehicle_queues[i]);
     }
-
+    if (log_fp) fclose(log_fp);
+    close(client_sock);
+    close(server_sock);
+#ifdef _WIN32
+    WSACleanup();
+#endif
     return 0;
 }
