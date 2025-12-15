@@ -26,8 +26,11 @@ The simulation uses a priority queue approach for traffic management:
 - Normal serving: O(n) where n=4 lanes
 - Overall simulation: O(t) where t is time steps, dominated by polling
 
-## References
+## Screenshots
 
-- SDL Documentation: https://wiki.libsdl.org/SDL2/FrontPage
-- C Programming Language (K&R)
-- Data Structures and Algorithms concepts
+- ![Simulator Running](screenshots/simulator.png)
+- ![Graphics Window](screenshots/graphics.png)
+
+## Video Demo
+
+[Watch the demo video](videos/demo.mp4)
