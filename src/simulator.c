@@ -82,6 +82,7 @@ int main() {
     int client_sock = accept(server_sock, NULL, NULL);
     if (client_sock < 0) {
         perror("Accept failed");
+        close(server_sock);
         return 1;
     }
     printf("Generator connected.\n");
