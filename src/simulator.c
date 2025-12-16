@@ -1,4 +1,5 @@
 // TODO: Optimize by using threads for concurrent processing
+// Example: pthread_create for light timer and vehicle processing
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
