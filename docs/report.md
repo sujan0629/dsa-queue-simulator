@@ -34,3 +34,7 @@ The simulation uses a priority queue approach for traffic management:
 ## Video Demo
 
 [Watch the demo video](videos/demo.mp4)
+
+## Conclusion
+
+The project successfully implements a traffic light simulator using queues, with priority handling, graphics, and communication. Time complexity is O(1) for operations, space O(n). Future improvements: threading, real-time graphics updates.
