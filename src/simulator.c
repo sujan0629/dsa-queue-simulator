@@ -113,7 +113,7 @@ int main() {
     LightState current_light = GREEN;
     int light_timer = GREEN_TIME;
 
-    // Simulate polling and processing
+    // Simulate polling and processing (optimized to 1s for responsiveness)
     while (1) {
         sleep(1); // Poll every 1 second for finer control
 
