@@ -38,3 +38,7 @@ The simulation uses a priority queue approach for traffic management:
 ## Conclusion
 
 The project successfully implements a traffic light simulator using queues, with priority handling, graphics, and communication. Time complexity is O(1) for operations, space O(n). Future improvements: threading, real-time graphics updates.
+
+## Source Code
+
+[GitHub Repository](https://github.com/sujan0629/dsa-queue-simulator)
