@@ -12,7 +12,7 @@
 Sujan Bhatta - Roll No. 14 (CS II/I)
 
 ## Status
-🚧 Under Development
+✅ Completed - Ready for submission
 
 ## How to Run
 
