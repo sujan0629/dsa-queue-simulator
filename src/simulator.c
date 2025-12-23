@@ -83,7 +83,8 @@ int main() {
     int client_sock = accept(server_sock, NULL, NULL);
     if (client_sock < 0) {
         perror("Accept failed");
-        close(server_sock);
+        closesocket(server_sock);
+        WSACleanup();
         return 1;
     }
     printf("Generator connected.\n");
@@ -211,8 +212,8 @@ int main() {
         freeQueue(vehicle_queues[i]);
     }
     if (log_fp) fclose(log_fp);
-    close(client_sock);
-    close(server_sock);
+    closesocket(client_sock);
+    closesocket(server_sock);
 #ifdef _WIN32
     WSACleanup();
 #endif
