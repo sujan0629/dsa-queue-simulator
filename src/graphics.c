@@ -53,10 +53,15 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
-        // Draw lanes
-        for (int i = 0; i < 4; i++) {
-            draw_lane(renderer, 50 + i * 150, 100, LANE_WIDTH, LANE_HEIGHT);
-        }
+        // Draw cross/junction lanes
+        // North lane (A)
+        draw_lane(renderer, WINDOW_WIDTH/2 - LANE_WIDTH/2, 0, LANE_WIDTH, WINDOW_HEIGHT/2 - 40);
+        // South lane (B)
+        draw_lane(renderer, WINDOW_WIDTH/2 - LANE_WIDTH/2, WINDOW_HEIGHT/2 + 40, LANE_WIDTH, WINDOW_HEIGHT/2 - 40);
+        // West lane (D)
+        draw_lane(renderer, 0, WINDOW_HEIGHT/2 - LANE_WIDTH/2, WINDOW_WIDTH/2 - 40, LANE_WIDTH);
+        // East lane (C)
+        draw_lane(renderer, WINDOW_WIDTH/2 + 40, WINDOW_HEIGHT/2 - LANE_WIDTH/2, WINDOW_WIDTH/2 - 40, LANE_WIDTH);
 
         // Read graphics state (lane vehicle counts) from file written by simulator
         int lane_counts[4] = {0,0,0,0};
@@ -68,17 +73,29 @@ int main(int argc, char* argv[]) {
             fclose(gs);
         }
 
-        // Draw vehicles according to lane_counts (simple vertical stacking)
-        for (int lane = 0; lane < 4; lane++) {
-            int count = lane_counts[lane];
-            if (count > 20) count = 20; // cap visible vehicles
-            int base_x = 50 + lane * 150 + 10;
-            int base_y = 120; // top of lane
-            int spacing = 18;
-            for (int v = 0; v < count; v++) {
-                int vy = base_y + v * spacing;
-                draw_vehicle(renderer, base_x, vy);
-            }
+        // Draw vehicles for each lane, moving toward the center
+        int center_x = WINDOW_WIDTH/2;
+        int center_y = WINDOW_HEIGHT/2;
+        int spacing = 22;
+        // Lane 0: North (A)
+        for (int v = 0; v < lane_counts[0] && v < 15; v++) {
+            int vy = center_y - 40 - (v+1)*spacing;
+            draw_vehicle(renderer, center_x - 10, vy);
+        }
+        // Lane 1: South (B)
+        for (int v = 0; v < lane_counts[1] && v < 15; v++) {
+            int vy = center_y + 40 + v*spacing;
+            draw_vehicle(renderer, center_x - 10, vy);
+        }
+        // Lane 2: East (C)
+        for (int v = 0; v < lane_counts[2] && v < 15; v++) {
+            int vx = center_x + 40 + v*spacing;
+            draw_vehicle(renderer, vx, center_y - 5);
+        }
+        // Lane 3: West (D)
+        for (int v = 0; v < lane_counts[3] && v < 15; v++) {
+            int vx = center_x - 40 - (v+1)*spacing;
+            draw_vehicle(renderer, vx, center_y - 5);
         }
 
         // Present the rendered frame
