@@ -111,6 +111,20 @@ Sujan Bhatta - Roll No. 14 (CS II/I)
 ## Status
 ✅ Completed - Ready for submission
 
+## Media
+
+- **Demo Video** (click to play):
+
+   <video controls src="videos/demo.mp4" width="640">Your browser does not support the video tag.</video>
+
+- **Graphics Screenshot**:
+
+   ![Graphics Window](screenshots/graphics.png)
+
+- **Simulator Console Screenshot**:
+
+   ![Simulator Running](screenshots/simulator.png)
+
 ## References
 - Assignment: COMP202 DSA Queue Simulator
 - SDL Documentation: https://wiki.libsdl.org/SDL2/FrontPage

@@ -72,7 +72,7 @@ The design prioritizes constant-time operations for core queue functions to hand
   Console output showing vehicle processing and light cycles.
 
 - ![Graphics Window](screenshots/graphics.png)  
-  SDL window displaying lanes with vehicles and traffic lights.
+  SDL window displaying lanes, vehicles, and traffic lights (optional, requires SDL2 installation).
 
 ## Video Demo
 

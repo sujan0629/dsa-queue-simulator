@@ -19,6 +19,18 @@
 #define sleep(x) Sleep(x * 1000)
 #endif
 
+#include <errno.h>
+
+#ifdef _WIN32
+typedef SOCKET sock_t;
+#define CLOSE_SOCKET(s) closesocket(s)
+#define SOCKET_ERRNO() WSAGetLastError()
+#else
+typedef int sock_t;
+#define CLOSE_SOCKET(s) close(s)
+#define SOCKET_ERRNO() errno
+#endif
+
 typedef enum {
     RED,
     GREEN
@@ -60,7 +72,7 @@ void load_vehicles_from_file(int lane_index) {
     fclose(fp);
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     // Initialize queues
     for (int i = 0; i < NUM_LANES; i++) {
         vehicle_queues[i] = createQueue();
@@ -71,23 +83,98 @@ int main() {
     WSAStartup(MAKEWORD(2,2), &wsa);
 #endif
 
-    int server_sock = socket(AF_INET, SOCK_STREAM, 0);
+    sock_t server_sock = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in server_addr;
+    memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(8080);
 
-    bind(server_sock, (struct sockaddr*)&server_addr, sizeof(server_addr));
-    listen(server_sock, 5);
-    printf("Simulator listening on port 8080\n");
-
-    int client_sock = accept(server_sock, NULL, NULL);
-    if (client_sock < 0) {
-        perror("Accept failed");
-        closesocket(server_sock);
+    /* allow optional port via argv, default 8080 */
+    int port = 8080;
+    if (argc > 1) {
+        int p = atoi(argv[1]);
+        if (p > 0 && p < 65536) port = p;
+    }
+    server_addr.sin_port = htons(port);
+#ifdef _WIN32
+    if (server_sock == INVALID_SOCKET) {
+        fprintf(stderr, "socket() failed, WSA error: %d\n", SOCKET_ERRNO());
         WSACleanup();
         return 1;
     }
+
+    /* set SO_REUSEADDR so restarting quickly doesn't fail bind */
+#ifdef _WIN32
+    {
+        char reuse = 1;
+        setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+    }
+#else
+    {
+        int reuse = 1;
+        setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+    }
+#endif
+
+    if (bind(server_sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR) {
+#ifdef _WIN32
+        fprintf(stderr, "bind() failed on port %d, WSA error: %d\n", port, SOCKET_ERRNO());
+#else
+        fprintf(stderr, "bind() failed on port %d: ", port);
+        perror("");
+#endif
+        CLOSE_SOCKET(server_sock);
+#ifdef _WIN32
+        WSACleanup();
+#endif
+        return 1;
+    }
+
+    if (listen(server_sock, 5) == SOCKET_ERROR) {
+        fprintf(stderr, "listen() failed, WSA error: %d\n", SOCKET_ERRNO());
+        CLOSE_SOCKET(server_sock);
+        WSACleanup();
+        return 1;
+    }
+    printf("Simulator listening on port %d\n", port);
+
+    struct sockaddr_in client_addr;
+    int client_len = sizeof(client_addr);
+    sock_t client_sock = accept(server_sock, (struct sockaddr*)&client_addr, &client_len);
+    if (client_sock == INVALID_SOCKET) {
+        fprintf(stderr, "Accept failed, WSA error: %d\n", SOCKET_ERRNO());
+        CLOSE_SOCKET(server_sock);
+        WSACleanup();
+        return 1;
+    }
+#else
+    if (server_sock < 0) {
+        perror("socket() failed");
+        return 1;
+    }
+
+    if (bind(server_sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+        perror("bind() failed");
+        CLOSE_SOCKET(server_sock);
+        return 1;
+    }
+
+    if (listen(server_sock, 5) < 0) {
+        perror("listen() failed");
+        CLOSE_SOCKET(server_sock);
+        return 1;
+    }
+    printf("Simulator listening on port 8080\n");
+
+    struct sockaddr_in client_addr;
+    socklen_t client_len = sizeof(client_addr);
+    sock_t client_sock = accept(server_sock, (struct sockaddr*)&client_addr, &client_len);
+    if (client_sock < 0) {
+        perror("Accept failed");
+        CLOSE_SOCKET(server_sock);
+        return 1;
+    }
+#endif
     printf("Generator connected.\n");
 
     FILE* log_fp = fopen("simulation_log.txt", "a");
@@ -203,6 +290,16 @@ int main() {
                 if (log_fp) {
                     fprintf(log_fp, "Lane %c: %d vehicles\n", 'A' + i, getSize(vehicle_queues[i]));
                     fflush(log_fp);
+                }
+            }
+            // Write graphics state file so external renderer can display counts
+            {
+                FILE* gs = fopen("data/graphics_state.txt", "w");
+                if (gs) {
+                    for (int i = 0; i < NUM_LANES; i++) {
+                        fprintf(gs, "%d\n", getSize(vehicle_queues[i]));
+                    }
+                    fclose(gs);
                 }
             }
         }

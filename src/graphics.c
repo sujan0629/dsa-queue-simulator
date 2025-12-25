@@ -1,3 +1,4 @@
+#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,7 +20,7 @@ void draw_vehicle(SDL_Renderer* renderer, int x, int y) {
     SDL_RenderFillRect(renderer, &rect);
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("SDL init failed: %s\n", SDL_GetError());
         return 1;
@@ -42,8 +43,6 @@ int main() {
 
     int running = 1;
     SDL_Event event;
-    SDL_Color red = {255, 0, 0, 255};
-    SDL_Color green = {0, 255, 0, 255};
     int light_state = 0; // 0 red, 1 green
 
     while (running) {
@@ -59,10 +58,34 @@ int main() {
             draw_lane(renderer, 50 + i * 150, 100, LANE_WIDTH, LANE_HEIGHT);
         }
 
-        // Draw vehicles (placeholder)
-        draw_vehicle(renderer, 60, 120);
-        draw_vehicle(renderer, 210, 150);
-        SDL_Delay(1000); // 1 second
+        // Read graphics state (lane vehicle counts) from file written by simulator
+        int lane_counts[4] = {0,0,0,0};
+        FILE* gs = fopen("data/graphics_state.txt", "r");
+        if (gs) {
+            for (int i = 0; i < 4; i++) {
+                if (fscanf(gs, "%d", &lane_counts[i]) != 1) lane_counts[i] = 0;
+            }
+            fclose(gs);
+        }
+
+        // Draw vehicles according to lane_counts (simple vertical stacking)
+        for (int lane = 0; lane < 4; lane++) {
+            int count = lane_counts[lane];
+            if (count > 20) count = 20; // cap visible vehicles
+            int base_x = 50 + lane * 150 + 10;
+            int base_y = 120; // top of lane
+            int spacing = 18;
+            for (int v = 0; v < count; v++) {
+                int vy = base_y + v * spacing;
+                draw_vehicle(renderer, base_x, vy);
+            }
+        }
+
+        // Present the rendered frame
+        SDL_RenderPresent(renderer);
+
+        // Short delay for smoother updates and to pick up file changes
+        SDL_Delay(150); // 150 ms
         light_state = !light_state;
     }
 
