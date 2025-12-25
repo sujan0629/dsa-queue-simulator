@@ -66,17 +66,18 @@ The design prioritizes constant-time operations for core queue functions to hand
 - Manual testing validates priority activation, proportional serving, and graphics display.
 - All tests pass, ensuring correctness.
 
+
 ## Screenshots
 
-- ![Simulator Running](screenshots/simulator.png)  
+- ![Simulator Running](../screenshots/simulator.png)  
   Console output showing vehicle processing and light cycles.
 
-- ![Graphics Window](screenshots/graphics.png)  
+- ![Graphics Window](../screenshots/graphics.png)  
   SDL window displaying lanes, vehicles, and traffic lights (optional, requires SDL2 installation).
 
 ## Video Demo
 
-[Watch the demo video](videos/demo.mp4)  
+[Watch the demo video](https://github.com/sujan0629/dsa-queue-simulator/raw/main/videos/demo.mp4)  
 Demonstrates the simulation running with graphics and console output.
 
 ## Conclusion
