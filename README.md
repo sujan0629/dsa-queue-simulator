@@ -115,14 +115,6 @@ Sujan Bhatta - Roll No. 14 (CS II/I)
 
 ## Media
 
-- **Demo Video**:
-
-   <video controls src="https://github.com/sujan0629/dsa-queue-simulator/raw/main/videos/demo.mp4" width="640">Your browser does not support the video tag.</video>
-
-- **Graphics Screenshot**:
-
-   ![Graphics Window](screenshots/graphics.png)
-
 - **Simulator Console Screenshot**:
 
    ![Simulator Running](screenshots/simulator.png)
