@@ -15,6 +15,9 @@ A comprehensive traffic junction simulator implementing queue data structures fo
 - **Multiple Generators**: Basic, burst, and steady traffic patterns
 - **Monitoring**: Real-time queue status via receiver programs
 
+## Design Decisions
+- **Lane Configuration (6 Lanes per Road)**: While the assignment specifies 3 lanes per road (1 incoming, 2 outgoing), we implemented 3 lanes per direction (totaling 6 per road) for enhanced realism and safety. This prevents head-on collisions by separating traffic flows: left-turn lanes, straight lanes, and right-turn lanes. Each lane has specific turning intents, making the simulation more accurate to real-world intersections. The assignment's priority and normal lane logic still applies (e.g., AL2 as priority), but with added granularity for better visualization and collision avoidance.
+
 ## Project Structure
 ```
 dsa-simulator/

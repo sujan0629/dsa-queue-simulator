@@ -4,6 +4,10 @@
 
 This project implements a traffic light management system using data structures and algorithms learned in COMP202. The simulator models four lanes of traffic (A, B, C, D) with vehicles arriving and being processed based on traffic light cycles. It incorporates priority handling for lane A (AL2), socket-based communication between traffic generators and the simulator, and optional SDL graphics for visualization. The system demonstrates the use of queues for FIFO vehicle management, priority scheduling, and inter-process communication.
 
+## Design Decisions
+
+- **Lane Configuration**: While the assignment specifies 3 lanes per road (1 incoming, 2 outgoing), the implementation uses 3 lanes per direction (totaling 6 per road) for enhanced realism. This setup separates traffic flows to prevent head-on collisions: dedicated lanes for left turns, straight travel, and right turns. Each lane has specific turning intents, improving safety and visualization. The core priority and normal lane logic (e.g., AL2 priority when >10 vehicles) remains intact, with added granularity for better simulation accuracy.
+
 ## Data Structures Used
 
 The core data structures are implemented in C using linked lists and structs:
