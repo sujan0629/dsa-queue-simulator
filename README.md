@@ -16,7 +16,20 @@ A comprehensive traffic junction simulator implementing queue data structures fo
 - **Monitoring**: Real-time queue status via receiver programs
 
 ## Design Decisions
-- **Lane Configuration (6 Lanes per Road)**: While the assignment specifies 3 lanes per road (1 incoming, 2 outgoing), we implemented 3 lanes per direction (totaling 6 per road) for enhanced realism and safety. This prevents head-on collisions by separating traffic flows: left-turn lanes, straight lanes, and right-turn lanes. Each lane has specific turning intents, making the simulation more accurate to real-world intersections. The assignment's priority and normal lane logic still applies (e.g., AL2 as priority), but with added granularity for better visualization and collision avoidance.
+
+- **Lane Configuration (6 Lanes per Road):**
+   - The assignment specifies 3 lanes per road (1 incoming, 2 outgoing), but we implemented 3 lanes per direction (totaling 6 per road) for enhanced realism and safety.
+   - **Why?**
+      - Prevents head-on collisions by separating incoming and outgoing traffic.
+      - Allows for dedicated left-turn, straight, and right-turn lanes, matching real-world intersections.
+      - Each lane has a specific turning intent, making the simulation more accurate and visually clear.
+      - Enables more realistic traffic light logic: with 6 lanes (3 per direction), each axis (NS/EW) can have its own green light at the same time, just like real intersections. This is why you see two green lights in the simulation—one for each direction. If we used only 3 lanes per road, this would not be possible, and only one side could go at a time.
+      - The design allows for more granular control and better visualization of traffic flow, lane priorities, and turning behaviors.
+   - **Assignment Compatibility:**
+      - The priority and normal lane logic (e.g., AL2 as priority) is still fully supported, just mapped to the more detailed lane structure.
+      - The extra lanes do not change the core queue management or priority logic—they only improve safety and realism in the simulation.
+   - **Summary:**
+      - This design choice was made to provide a more accurate, safe, and visually informative simulation, while still meeting all assignment requirements for queue management and priority handling.
 
 ## Project Structure
 ```
