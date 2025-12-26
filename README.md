@@ -1,5 +1,7 @@
 # DSA Queue Simulator - Traffic Light Management System
 
+![Traffic Simulation Demo](IMG_6077.gif)
+
 ## Project Overview
 A comprehensive traffic junction simulator implementing queue data structures for vehicle management. Features priority lane handling, traffic light cycles, inter-process communication, and optional graphics visualization. Developed for COMP202 DSA assignment.
 
