@@ -10,7 +10,7 @@ A comprehensive traffic junction simulator implementing queue data structures fo
 - **Priority Lane Handling**: AL2 (lane A) gets priority when >10 vehicles accumulate, serving until <5
 - **Traffic Light Simulation**: RED/GREEN cycles (10s green, 5s red) with serving only during green
 - **Communication**: Socket-based IPC between generator and simulator (TCP on port 8080)
-- **Graphics**: SDL2-based visual rendering of lanes, lights, and vehicles
+- **Graphics**: SDL2-based visual rendering of lanes, lights, and vehicles (includes yellow light transitions for realism)
 - **Logging & Testing**: File-based simulation logs and unit/integration tests
 - **Multiple Generators**: Basic, burst, and steady traffic patterns
 - **Monitoring**: Real-time queue status via receiver programs
@@ -23,8 +23,7 @@ The core data structures are implemented in C using linked lists and structs:
 |----------------|-----------------|---------|
 | Queue | Linked List (Node with Vehicle, front/rear pointers, size) | Store vehicles in each lane in FIFO order. Each queue has operations for enqueue, dequeue, is_empty, and size. |
 | Vehicle | Struct with int id | Represent individual vehicles with a unique identifier for tracking. |
-| LightState | Enum (RED, GREEN) | Track the current state of the traffic light for each lane. |
-| Lane | Struct with Queue and LightState | Encapsulate lane-specific data including vehicle queue and light status. |
+| LightState | Enum (RED, GREEN) | Track the current state of the traffic light (single light for all lanes). |
 
 The linked list implementation ensures O(1) enqueue and dequeue operations, which is crucial for efficient simulation.
 
@@ -38,7 +37,7 @@ The simulation algorithm follows these steps:
 
 3. **Simulation Loop**:
    - Poll for new vehicles from generators every second.
-   - Cycle traffic lights: GREEN for one lane at a time, RED for others.
+   - Cycle traffic light: GREEN (serve all lanes proportionally or with priority), RED (wait).
    - During GREEN phase:
      - Check for priority condition: If lane A (AL2) has >10 vehicles, activate priority mode.
      - In priority mode: Serve lane A until <5 vehicles remain.
