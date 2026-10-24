@@ -74,7 +74,7 @@ The design prioritizes constant-time operations for core queue functions to hand
 - Unit tests verify queue operations (enqueue, dequeue, size).
 - Integration tests check socket communication and simulation logic.
 - Manual testing validates priority activation, proportional serving, and graphics display.
-- All tests pass, ensuring correctness.
+- Run the checked-in tests for your compiler/platform before relying on their results; this overview does not assert a current CI pass or exhaustive correctness.
 
 ## Design Decisions
 
@@ -198,7 +198,7 @@ Sujan Bhatta - Roll No. 14 (CS II/I)
 
 - **Graphics Window**:
 
-   ![Graphics Window](screenshots/graphics.png)
+   The graphics view is shown in the animated demo at the top of this README.
 
 ## Video Demo
 
